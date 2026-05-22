@@ -11,9 +11,17 @@ def get_user_data():
 
         data = response.json()
 
-        logging.info("sccessfully fetched user data")
+        #Extracting reevant fields
+        extracted_data = {
+            "name": data.get("name"),
+            "email": data.get("email"),
+            "company": data.get("company", {}).get("name"),
+            "city": data.get("address", {}).get("city")
+        }
 
-        return data
+        logging.info("sccessfully fetched and extracted relevant fields")
+
+        return extracted_data
     
     except requests.exceptions.RequestException as e:
         logging.error(f"API request failed: {e}")
