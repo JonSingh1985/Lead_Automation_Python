@@ -1,7 +1,7 @@
 import csv
 import logging
 from utils import clean_email, clean_phone, remove_duplicates
-from api import get_user_data
+from api import get_user_data, fetch_all_users
 
 
 #loging configuration
@@ -41,16 +41,35 @@ def main():
 
         # API data enrichment
 
+        # fetch API data once
+
+        users = fetch_all_users()
+
+        # Look up dictionary
+
+        user_lookup = {
+             user.get("email","").lower(): user
+             for user in users
+        }
+
+
+
         enriched_data = []
 
-        for row in unique_data:
-             api_data = get_user_data(row["email"])
+        # Loop through CSV data
 
-             if api_data:
+        for row in unique_data:
+             
+             email = row["email"].lower()
+
+             user = user_lookup.get(email)
+
+            
+             if user:
                   enriched_row = {
                        **row, # existing data
-                       "company": api_data.get("company"),
-                       "city": api_data.get("city")
+                       "company": user.get("company","").get("name"),
+                       "city": user.get("address","").get("city")
                   }
              else: 
                   enriched_row = {

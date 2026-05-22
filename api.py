@@ -1,6 +1,42 @@
 import requests
 import logging
 
+
+
+
+def fetch_all_users():
+    try:
+        url = "https://jsonplaceholder.typicode.com/users"
+        
+        response = requests.get(url, timeout=5)
+        response.raise_for_status()
+
+        users = response.json()
+
+        logging.info(f"Fetched {len(users)} users fron API.")
+
+        return users
+    
+    except requests.exceptions.RequestException as e:
+        logging.error(f"API request failed: {e}")
+        return []
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 def get_user_data(email):
     try:
         # Simulating API call to fetch user data based on email
@@ -31,3 +67,4 @@ def get_user_data(email):
     except requests.exceptions.RequestException as e:
         logging.error(f"API request failed: {e}")
         return None
+    
