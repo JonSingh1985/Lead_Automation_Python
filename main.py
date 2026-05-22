@@ -44,7 +44,7 @@ def main():
         enriched_data = []
 
         for row in unique_data:
-             api_data = get_user_data()
+             api_data = get_user_data(row["email"])
 
              if api_data:
                   enriched_row = {
