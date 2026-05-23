@@ -2,6 +2,9 @@ import csv
 import logging
 from utils import clean_email, clean_phone, remove_duplicates
 from api import get_user_data, fetch_all_users
+from services.lead_cleaner import LeadCleaner
+
+
 
 
 #loging configuration
@@ -15,14 +18,14 @@ def main():
     # Read file
         with open("data/leads.csv", "r") as file:
             reader = csv.DictReader(file)
-            
+            cleaner = LeadCleaner()
             
             try:
                      cleaned_data =[
                         {
                             "name": row["name"].strip(),
-                            "email": clean_email(row["email"]),
-                            "phone": clean_phone(row["phone"])
+                            "email": cleaner.clean_email(row["email"]),
+                            "phone": cleaner.celan_phone(row["phone"])
                        }
                        for row in reader
                     ]

@@ -1,25 +1,38 @@
 import requests
 import logging
+import time
 
 
 
 
-def fetch_all_users():
-    try:
-        url = "https://jsonplaceholder.typicode.com/users"
-        
-        response = requests.get(url, timeout=5)
-        response.raise_for_status()
-
-        users = response.json()
-
-        logging.info(f"Fetched {len(users)} users fron API.")
-
-        return users
+def fetch_all_users(retries=3, delay=2):
     
-    except requests.exceptions.RequestException as e:
-        logging.error(f"API request failed: {e}")
-        return []
+    url = "https://jsonplaceholder.typicode.com/users"
+
+    for attempt in range(retries):
+        try:
+
+            logging.info(f"API attempt {attempt + 1}")
+        
+            response = requests.get(url, timeout=5)
+            response.raise_for_status()
+
+            users = response.json()
+
+            logging.info(f"Fetched {len(users)} users fron API.")
+
+            return users
+    
+        except requests.exceptions.RequestException as e:
+            logging.warning(f"Attempt {attempt + 1} failed: {e}")
+
+            if attempt < retries - 1:
+                logging.info(f"retring in {delay} seconds...")
+                time.sleep(delay)
+
+            else:
+                logging.error("All API attemps failed.")
+                return []
 
 
 
