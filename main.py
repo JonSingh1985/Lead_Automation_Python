@@ -3,6 +3,9 @@ import logging
 from utils import clean_email, clean_phone, remove_duplicates
 from api import get_user_data, fetch_all_users
 from services.lead_cleaner import LeadCleaner
+from services.enrichment_client import EnrichmentClient
+
+
 
 
 
@@ -39,23 +42,21 @@ def main():
         logging.info("Finished cleaning data.")
 
         # Remove duplecates
-        unique_data = remove_duplicates(cleaned_data)
+        unique_data = cleaner.remove_duplicates(cleaned_data)
         logging.info(f"Removed duplicates, Final count: {len(unique_data)}")
 
         # API data enrichment
 
         # fetch API data once
 
-        users = fetch_all_users()
+        client = EnrichmentClient()
+
+        users = client.fetch_all_users()
 
         # Look up dictionary
 
-        user_lookup = {
-             user.get("email","").lower(): user
-             for user in users
-        }
-
-
+        lookup = client.create_lookup(users)
+        
 
         enriched_data = []
 
@@ -63,25 +64,9 @@ def main():
 
         for row in unique_data:
              
-             email = row["email"].lower()
+            enriched_row = client.enrich_lead(row, lookup)
 
-             user = user_lookup.get(email)
-
-            
-             if user:
-                  enriched_row = {
-                       **row, # existing data
-                       "company": user.get("company","").get("name"),
-                       "city": user.get("address","").get("city")
-                  }
-             else: 
-                  enriched_row = {
-                       **row,
-                       "company": None,
-                       "city": None
-                  }
-
-             enriched_data.append(enriched_row)
+            enriched_data.append(enriched_row)
 
         # Write output 
         with open("output/cleaned_leads.csv", "w", newline="") as file:
