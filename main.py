@@ -4,7 +4,7 @@ from utils import clean_email, clean_phone, remove_duplicates
 from api import get_user_data, fetch_all_users
 from services.lead_cleaner import LeadCleaner
 from services.enrichment_client import EnrichmentClient
-
+import time
 
 
 
@@ -57,20 +57,31 @@ def main():
 
         lookup = client.create_lookup(users)
         
-
         enriched_data = []
 
+        
         # Loop through CSV data
 
         for row in unique_data:
              
             enriched_row = client.enrich_lead(row, lookup)
+            
+            # Encrich with AI
+            ai_result = client.analyze_lead_with_ai(enriched_row)
+            
+            time.sleep(2)  # prevent rate limit
+
+            if ai_result:
+                enriched_row["ai_raw"] = ai_result
+            else:
+                enriched_row["ai_raw"] = None
+
 
             enriched_data.append(enriched_row)
 
         # Write output 
         with open("output/cleaned_leads.csv", "w", newline="") as file:
-            fieldnames = ["name", "email", "phone", "company", "city"]
+            fieldnames = ["name", "email", "phone", "company", "city", "ai_raw"]
             writer = csv.DictWriter(file, fieldnames=fieldnames)
 
             writer.writeheader()

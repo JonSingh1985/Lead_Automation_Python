@@ -1,7 +1,10 @@
 import requests
 import logging
 import time
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
 
 
 class EnrichmentClient:
@@ -59,3 +62,51 @@ class EnrichmentClient:
                 "company": None,
                 "city": None
             }
+        
+    def analyze_lead_with_ai(self, row):
+
+        
+
+        try:
+            url = "https://openrouter.ai/api/v1/chat/completions"
+
+            api_key = os.getenv("OPENROUTER_API_KEY")
+
+            headers = {
+                "Authorization": f"Bearer {api_key}",
+                "content-type": "application/json",
+            }
+
+            
+
+            prompt = f"""
+            Classify this lead:
+            Name: {row["name"]}
+            Email: {row["email"]}
+           
+            return only JSON like this:
+            {{ 
+            "score": "Hot or Cold",
+            "reason": "Short explanation"
+            }}
+            """
+
+            payload = {
+                "model": "openai/gpt-3.5-turbo",
+                "messages": [
+                    {"role": "user", "content": prompt}
+                ]
+            }
+
+            response = requests.post(url, headers=headers, json=payload, timeout=10)
+            response.raise_for_status()
+
+            result = response.json()
+
+            content = result["choices"][0]["message"]["content"]
+
+            return content
+        
+        except Exception as e:
+            logging.error(f"AI enrichment failed: {e}")
+            return None

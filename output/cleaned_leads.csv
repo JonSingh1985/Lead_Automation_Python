@@ -1,5 +1,17 @@
-name,email,phone,company,city
-Leanne Graham,sincere@april.biz,919876543210,Romaguera-Crona,Gwenborough
-Ervin Howell,shanna@melissa.tv,9876543210,Deckow-Crist,Wisokyburgh
-Clementine Bauch,nathan@yesenia.net,9876543210,Romaguera-Jacobson,McKenziehaven
-Patricia Lebsack,julianne.oconner@kory.org,9876543210,Robel-Corkery,South Elvis
+name,email,phone,company,city,ai_raw
+Leanne Graham,sincere@april.biz,919876543210,Romaguera-Crona,Gwenborough,"{
+    ""score"": ""Hot"",
+    ""reason"": ""Professional email address suggests high likelihood of being a serious lead""
+}"
+Ervin Howell,shanna@melissa.tv,9876543210,Deckow-Crist,Wisokyburgh,"{
+    ""score"": ""Cold"",
+    ""reason"": ""There is no indication of interest or potential in this lead""
+}"
+Clementine Bauch,nathan@yesenia.net,9876543210,Romaguera-Jacobson,McKenziehaven,"{
+    ""score"": ""Cold"",
+    ""reason"": ""The lead provided an email address, but no additional information was provided to indicate interest or potential as a customer""
+}"
+Patricia Lebsack,julianne.oconner@kory.org,9876543210,Robel-Corkery,South Elvis,"{
+    ""score"": ""Cold"",
+    ""reason"": ""The email domain does not match the provided name, indicating a potentially fake or invalid email address.""
+}"
