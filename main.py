@@ -1,5 +1,6 @@
 import csv
 import logging
+import asyncio
 from utils import clean_email, clean_phone, remove_duplicates
 from api import get_user_data, fetch_all_users
 from services.lead_cleaner import LeadCleaner
@@ -8,6 +9,7 @@ import time
 
 
 
+         
 
 
 #loging configuration
@@ -28,7 +30,7 @@ def main():
                         {
                             "name": row["name"].strip(),
                             "email": cleaner.clean_email(row["email"]),
-                            "phone": cleaner.celan_phone(row["phone"])
+                            "phone": cleaner.clean_phone(row["phone"])
                        }
                        for row in reader
                     ]
@@ -47,45 +49,28 @@ def main():
 
         # API data enrichment
 
+
+
+
+
+
         # fetch API data once
-
         client = EnrichmentClient()
-
         users = client.fetch_all_users()
 
         # Look up dictionary
-
         lookup = client.create_lookup(users)
         
-        enriched_data = []
+        logging.info("Starting async enrichment process...")
 
-        
-        # Loop through CSV data
+        enriched_data = asyncio.run(
+             client.process_lead_acync(unique_data, lookup)
+        )
 
-        for row in unique_data:
-             
-            enriched_row = client.enrich_lead(row, lookup)
-            
-            # Encrich with AI
-            ai_result = client.analyze_lead_with_ai(enriched_row)
-            
-            time.sleep(2)  # prevent rate limit
-
-            # Parse AI response
-            ai_data = client.parse_ai_response(ai_result) if ai_result else {
-                "score": None,
-                "reason": None
-            }
-
-            # Mearge everyting
-            final_row = {
-                **enriched_row,
-                "lead_score": ai_data["score"],
-                "reason": ai_data["reason"]
-            }
+        logging.info("Async enrichment completed.")
 
 
-            enriched_data.append(final_row)
+
 
         # Write output 
         with open("output/cleaned_leads.csv", "w", newline="") as file:
@@ -94,6 +79,8 @@ def main():
 
             writer.writeheader()
             writer.writerows(enriched_data)
+
+            # print("Enriched data: ", enriched_data)
 
         logging.info("Successfully wrote cleaned data to output file.")
 

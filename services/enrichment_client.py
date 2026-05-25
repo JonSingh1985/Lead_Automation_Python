@@ -3,6 +3,8 @@ import logging
 import time
 import os
 import json
+import httpx
+import asyncio
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -138,4 +140,104 @@ class EnrichmentClient:
                 "reason": None
             }
 
+    async def analyze_lead_with_ai_async(self, row):
+
+        try:
+            url = "https://openrouter.ai/api/v1/chat/completions"
+
+            api_key = os.getenv("OPENROUTER_API_KEY")
+
+            headers = {
+                "authorization": f"Bearer {api_key}",
+                "content": "application/json"
+            }
+
+            prompt = f"""
+            Classify this lead:
+
+            Name: {row['name']}
+            Email: {row['email']}
+
+            Return ONLY JSON like:
+            {{
+              "score": "Hot or Cold",
+              "reason": "short explanation"
+            }}
+            """
+
+            payload = {
+                "model": "openai/gpt-3.5-turbo",
+                "messages": [
+                    {"role": "user", "content": prompt}
+                ]
+            }
+
+            async with httpx.AsyncClient(timeout=10) as client:
+                response = await client.post(url=url, headers=headers, json=payload)
+
+                response.raise_for_status()
+                result = response.json()
+
+                content = result["choices"][0]["message"]["content"]
+
+                return content
+        except Exception as e:
+            logging.error(f"Async AI call failed: {e}")
+            return None
+        
     
+           #---------------------------------------------------------------------------------
+
+        # Async data enrichment
+
+    async def process_lead_acync(self, rows, lookup):
+            
+            semaphore = asyncio.Semaphore(2) # Limit to 2 concurrent AI calls
+
+            enriched_rows = []
+            tasks = []
+
+            for row in rows:
+                enriched_row = self.enrich_lead(row, lookup)
+                enriched_rows.append(enriched_row)
+
+                task = self._safe_ai_call(enriched_row, semaphore)
+                tasks.append(task)
+
+            results = await asyncio.gather(*tasks)
+
+            # print(enriched_row, results)
+
+            final_data = []
+
+            for enriched_row, ai_text in zip(enriched_rows, results):
+                ai_data = self.parse_ai_response(ai_text) if ai_text else {
+                    "Score": None,
+                    "reason": None
+                }
+
+                final_row = {
+                    **enriched_row,
+                    "lead_score": ai_data["score"],
+                    "reason": ai_data["reason"]
+                }
+
+                # print(final_row)
+
+                final_data.append(final_row)
+
+            return final_data
+    
+    async def _safe_ai_call(self, row, semaphore):
+        async with semaphore:
+            try:
+                result = await self.analyze_lead_with_ai_async(row)
+
+                await asyncio.sleep(0.5) # Small delay to avoid hitting rate limits
+
+                return result
+            
+            except Exception as e:
+                logging.error(F"Safe AI call failed: {e}")
+                return None
+            

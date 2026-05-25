@@ -1,5 +1,5 @@
 name,email,phone,company,city,lead_score,reason
-Leanne Graham,sincere@april.biz,919876543210,Romaguera-Crona,Gwenborough,Hot,High likelihood of converting due to professional email address and use of first and last name
-Ervin Howell,shanna@melissa.tv,9876543210,Deckow-Crist,Wisokyburgh,Cold,No indication of interest or specific request
-Clementine Bauch,nathan@yesenia.net,9876543210,Romaguera-Jacobson,McKenziehaven,Cold,There is no indication in the information provided to determine if the lead is hot or warm
-Patricia Lebsack,julianne.oconner@kory.org,9876543210,Robel-Corkery,South Elvis,Cold,Different name in name and email field
+Leanne Graham,sincere@april.biz,919876543210,Romaguera-Crona,Gwenborough,Hot,Leanne Graham provided a professional email address which indicates high interest in business opportunities.
+Ervin Howell,shanna@melissa.tv,9876543210,Deckow-Crist,Wisokyburgh,Cold,"Generic email address, not personalized to the individual or business."
+Clementine Bauch,nathan@yesenia.net,9876543210,Romaguera-Jacobson,McKenziehaven,Cold,"Generic email address, no personalization or specific information provided"
+Patricia Lebsack,julianne.oconner@kory.org,9876543210,Robel-Corkery,South Elvis,Cold,"The email domain does not match the name provided, suggesting a potential discrepancy or error in the lead information."
