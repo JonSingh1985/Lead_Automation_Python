@@ -71,17 +71,25 @@ def main():
             
             time.sleep(2)  # prevent rate limit
 
-            if ai_result:
-                enriched_row["ai_raw"] = ai_result
-            else:
-                enriched_row["ai_raw"] = None
+            # Parse AI response
+            ai_data = client.parse_ai_response(ai_result) if ai_result else {
+                "score": None,
+                "reason": None
+            }
+
+            # Mearge everyting
+            final_row = {
+                **enriched_row,
+                "lead_score": ai_data["score"],
+                "reason": ai_data["reason"]
+            }
 
 
-            enriched_data.append(enriched_row)
+            enriched_data.append(final_row)
 
         # Write output 
         with open("output/cleaned_leads.csv", "w", newline="") as file:
-            fieldnames = ["name", "email", "phone", "company", "city", "ai_raw"]
+            fieldnames = ["name", "email", "phone", "company", "city", "lead_score", "reason"]
             writer = csv.DictWriter(file, fieldnames=fieldnames)
 
             writer.writeheader()

@@ -8,7 +8,7 @@ class LeadCleaner:
             logging.error(f"Error cleaning email: {e}")
             return None
         
-    def celan_phone(self, phone):
+    def clean_phone(self, phone):
         try:
             return "".join(filter(str.isdigit, phone))
         except Exception as e:

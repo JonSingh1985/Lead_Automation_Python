@@ -2,6 +2,7 @@ import requests
 import logging
 import time
 import os
+import json
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -110,3 +111,31 @@ class EnrichmentClient:
         except Exception as e:
             logging.error(f"AI enrichment failed: {e}")
             return None
+
+    def parse_ai_response(self, ai_text):
+        try:
+            # String -> Dict
+            parsed = json.loads(ai_text)
+
+            score = parsed.get("score")
+            reason = parsed.get("reason")
+
+            return {
+                "score": score,
+                "reason": reason
+            }
+        except json.JSONDecodeError:
+            logging.error(f"Failed to parse AI response: (invaied JSON)")
+            return {
+                "score": None,
+                "reason": None
+            }
+
+        except Exception as e:
+            logging.error(f"Unexpected error parsing AI response: {e}")
+            return {
+                "score": None,
+                "reason": None
+            }
+
+    
