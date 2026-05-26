@@ -1,4 +1,4 @@
-from utils import clean_email, clean_phone, remove_duplicates
+from src.lead_automation.utils.utils import clean_email, clean_phone, remove_duplicates
 
 def test_clean_email():
     assert clean_email(" TEST@EMAIL.COM ") == "test@email.com"

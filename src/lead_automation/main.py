@@ -1,10 +1,10 @@
 import csv
 import logging
 import asyncio
-from utils import clean_email, clean_phone, remove_duplicates
-from api import get_user_data, fetch_all_users
-from services.lead_cleaner import LeadCleaner
-from services.enrichment_client import EnrichmentClient
+# from src.lead_automation.utils.utils import clean_email, clean_phone, remove_duplicates
+# from api import get_user_data, fetch_all_users
+from src.lead_automation.services.lead_cleaner import LeadCleaner
+from src.lead_automation.services.enrichment_client import EnrichmentClient
 import time
 
 

@@ -1,4 +1,4 @@
-from services.enrichment_client import EnrichmentClient
+from src.lead_automation.services.enrichment_client import EnrichmentClient
 
 def test_create_lookup():
     client = EnrichmentClient()

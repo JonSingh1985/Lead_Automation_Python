@@ -1,4 +1,4 @@
-from services.lead_cleaner import LeadCleaner
+from src.lead_automation.services.lead_cleaner import LeadCleaner
 
 def test_clean_email():
     cleaner = LeadCleaner()
