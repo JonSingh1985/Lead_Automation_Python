@@ -16,6 +16,8 @@ class EnrichmentClient:
         self.retries = retries
         self.delay = delay
         self.base_url = "https://jsonplaceholder.typicode.com/users"
+        self.cache = {}   
+        self.cache_lock = asyncio.Lock()
 
     def fetch_all_users(self):
 
@@ -229,15 +231,42 @@ class EnrichmentClient:
             return final_data
     
     async def _safe_ai_call(self, row, semaphore):
+        email = row.get("email")
+
+        print(f"{self.cache} - email: {email}")
+
+
+
         async with semaphore:
+
+            # Cache lock for checking
+            async with self.cache_lock:
+
+            # Check chache first
+
+                if email in self.cache:
+                    logging.info(f"Cache hit for {email}")
+                    return self.cache[email]
+                # print(self.cache)
+                              
             try:
                 result = await self.analyze_lead_with_ai_async(row)
 
                 await asyncio.sleep(0.5) # Small delay to avoid hitting rate limits
 
+                # Lock cache for writing
+                async with self.cache_lock:
+
+                # Save in cache
+                    self.cache[email] = result
+                    print(f"Cache updated for {email}")
+                # print(self.cache)
+               
                 return result
             
             except Exception as e:
                 logging.error(F"Safe AI call failed: {e}")
                 return None
             
+    
+                  
