@@ -63,11 +63,25 @@ def main():
         
         logging.info("Starting async enrichment process...")
 
+        start_time = time.time()
+
         enriched_data = asyncio.run(
              client.process_lead_acync(unique_data, lookup)
         )
 
-        logging.info("Async enrichment completed.")
+        end_time = time.time()
+
+        logging.info(f"Async enrichment completed: {end_time - start_time:.2f} seconds.")
+
+        # logging.info("Starting sync enrichment process...")
+
+        # start_time = time.time()
+
+        # sync_data = client.process_leads_sync(unique_data, lookup)
+
+        # end_time = time.time()
+
+        # logging.info(f"Sync processing time: {end_time - start_time:.2f} seconds")
 
 
 

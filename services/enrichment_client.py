@@ -269,4 +269,25 @@ class EnrichmentClient:
                 return None
             
     
-                  
+    # def process_leads_sync(self, rows, user_lookup):
+    #     final_data = []
+
+    #     for row in rows:
+    #         enriched_row = self.enrich_lead(row, user_lookup)
+
+    #         result = self.analyze_lead_with_ai(enriched_row)
+
+    #         ai_data = self.parse_ai_response(result) if result else {
+    #             "score": None,
+    #             "reason": None
+    #         }
+
+    #         final_row = {
+    #             **enriched_row,
+    #             "lead_score": ai_data["score"],
+    #             "reason": ai_data["reason"]
+    #         }
+
+    #         final_data.append(final_row)
+
+    #     return final_data
