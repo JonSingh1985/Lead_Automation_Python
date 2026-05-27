@@ -1,12 +1,13 @@
 import csv
 import logging
 import asyncio
+import time
+import typer
 # from src.lead_automation.utils.utils import clean_email, clean_phone, remove_duplicates
 # from api import get_user_data, fetch_all_users
 from src.lead_automation.services.lead_cleaner import LeadCleaner
 from src.lead_automation.services.enrichment_client import EnrichmentClient
-import time
-import typer
+from src.lead_automation.utils.validation import validate_row
 
 
 
@@ -15,6 +16,15 @@ app = typer.Typer()
 
 #loging configuration
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
+#HELPER FUNCTION 
+
+def normalize_row(row, cleaner):
+    return {
+        "name": row["name"].strip(),
+        "email": cleaner.clean_email(row["email"]),
+        "phone": cleaner.clean_phone(row["phone"])
+    }
 
 # COMMAND 1 — CLEAN LEADS
 
@@ -28,26 +38,25 @@ def clean_leads(input_file: str, output_file: str = "output/cleaned_leads.csv"):
     try:
         logging.info("Starting data cleaning process.")
 
+        cleaner = LeadCleaner()
+        cleaned_data = []
+
     # Read file
         with open(input_file, "r") as file:
             reader = csv.DictReader(file)
-            cleaner = LeadCleaner()
             
-            try:
-                     cleaned_data =[
-                        {
-                            "name": row["name"].strip(),
-                            "email": cleaner.clean_email(row["email"]),
-                            "phone": cleaner.clean_phone(row["phone"])
-                       }
-                       for row in reader
-                    ]
+            for row in reader:
+            
+                try:
+                    validate_row(row)
+
+                    cleaned_data.append(
+                        normalize_row(row, cleaner)
+                    )
 
 
-            except KeyError as e:
-                logging.warning(f"missing column in row: {e}")
-            except Exception as e:
-                logging.error(f"Error processing row: {e}")
+                except ValueError as e:
+                    logging.warning(f"Skipping invalid row: {e}")
 
         logging.info("Finished cleaning data.")
 
@@ -85,20 +94,25 @@ def enrich_leads(input_file: str, output_file: str = "output/enriched_leads.csv"
         # fetch API data once
         cleaner = LeadCleaner()
         client = EnrichmentClient()
+        cleaned_data = []
        
 
         # Read file
         with open(input_file, "r") as file:
             reader = csv.DictReader(file)
+
+            for row in reader:
+                try:
+                    validate_row(row)
+
+                    cleaned_data.append(
+                        normalize_row(row, cleaner)
+                    )
+
+                except ValueError as e:
+                    logging.warning(f"Skipping invalid row: {e}")
           
-            cleaned_data =[
-                        {
-                            "name": row["name"].strip(),
-                            "email": cleaner.clean_email(row["email"]),
-                            "phone": cleaner.clean_phone(row["phone"])
-                       }
-                       for row in reader
-                    ]
+            
             
         unique_data = cleaner.remove_duplicates(cleaned_data)
 
@@ -109,7 +123,6 @@ def enrich_leads(input_file: str, output_file: str = "output/enriched_leads.csv"
 
         # Async enrichment        
         logging.info("Starting async enrichment process...")
-
         start_time = time.time()
 
         enriched_data = asyncio.run(
@@ -117,7 +130,6 @@ def enrich_leads(input_file: str, output_file: str = "output/enriched_leads.csv"
         )
 
         end_time = time.time()
-
         logging.info(f"Async enrichment completed: {end_time - start_time:.2f} seconds.")
 
         # logging.info("Starting sync enrichment process...")
@@ -134,7 +146,7 @@ def enrich_leads(input_file: str, output_file: str = "output/enriched_leads.csv"
 
 
         # Write output 
-        with open("output/cleaned_leads.csv", "w", newline="") as file:
+        with open(output_file, "w", newline="") as file:
             fieldnames = ["name", "email", "phone", "company", "city", "lead_score", "reason"]
             writer = csv.DictWriter(file, fieldnames=fieldnames)
 
@@ -155,11 +167,3 @@ def enrich_leads(input_file: str, output_file: str = "output/enriched_leads.csv"
 if __name__ == "__main__":
     app()
 
-# API data fetching and extraction -----
-
-# data = get_user_data()
-
-# api_data = get_user_data()
-
-# if api_data:
-#     print("API Data: ", api_data)
