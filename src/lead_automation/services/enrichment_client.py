@@ -192,7 +192,7 @@ class EnrichmentClient:
 
         # Async data enrichment
 
-    async def process_lead_acync(self, rows, lookup):
+    async def process_lead_async(self, rows, lookup):
             
             semaphore = asyncio.Semaphore(2) # Limit to 2 concurrent AI calls
 
