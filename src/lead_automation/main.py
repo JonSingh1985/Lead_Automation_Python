@@ -6,22 +6,30 @@ import asyncio
 from src.lead_automation.services.lead_cleaner import LeadCleaner
 from src.lead_automation.services.enrichment_client import EnrichmentClient
 import time
+import typer
 
 
 
-         
+app = typer.Typer()         
 
 
 #loging configuration
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
+# COMMAND 1 — CLEAN LEADS
 
-def main():
+@app.command()
+
+def clean_leads(input_file: str, output_file: str = "output/cleaned_leads.csv"):
+    """
+    clean CSV leads (email, phone, remove duplicates)
+    """
+
     try:
         logging.info("Starting data cleaning process.")
 
     # Read file
-        with open("data/leads.csv", "r") as file:
+        with open(input_file, "r") as file:
             reader = csv.DictReader(file)
             cleaner = LeadCleaner()
             
@@ -47,20 +55,59 @@ def main():
         unique_data = cleaner.remove_duplicates(cleaned_data)
         logging.info(f"Removed duplicates, Final count: {len(unique_data)}")
 
-        # API data enrichment
+        # Write output 
+        with open(output_file, "w", newline="") as file:
+            fieldnames = ["name", "email", "phone"]
+            writer = csv.DictWriter(file, fieldnames=fieldnames)
 
+            writer.writeheader()
+            writer.writerows(unique_data)
 
+            # print("Enriched data: ", enriched_data)
 
+        logging.info(f"Successfully wrote cleaned data to output file:{output_file} ")
+    
+    except Exception as e:
+        logging.error(f"Error in clean_leads: {e}")
 
-
+        
+        
+    # COMMAND 2 — ENRICH LEADS
+    #  API data enrichment
+@app.command()
+def enrich_leads(input_file: str, output_file: str = "output/enriched_leads.csv"):
+    """
+    Enrich lead using API + AI
+    """
+    try:
+        logging.info("Starting enrichment process...")
 
         # fetch API data once
+        cleaner = LeadCleaner()
         client = EnrichmentClient()
-        users = client.fetch_all_users()
+       
 
-        # Look up dictionary
+        # Read file
+        with open(input_file, "r") as file:
+            reader = csv.DictReader(file)
+          
+            cleaned_data =[
+                        {
+                            "name": row["name"].strip(),
+                            "email": cleaner.clean_email(row["email"]),
+                            "phone": cleaner.clean_phone(row["phone"])
+                       }
+                       for row in reader
+                    ]
+            
+        unique_data = cleaner.remove_duplicates(cleaned_data)
+
+
+        # API Look up dictionary
+        users = client.fetch_all_users()
         lookup = client.create_lookup(users)
-        
+
+        # Async enrichment        
         logging.info("Starting async enrichment process...")
 
         start_time = time.time()
@@ -98,16 +145,15 @@ def main():
 
         logging.info("Successfully wrote cleaned data to output file.")
 
-    except FileNotFoundError:
-        logging.error("Input file not found. Check file path.")
+    
     except Exception as e:
-        logging.critical(f"Unexpected error: {e}")
+        logging.critical(f"Error in enrich_lead: {e}")
 
 
 
 
 if __name__ == "__main__":
-    main()
+    app()
 
 # API data fetching and extraction -----
 

@@ -1,3 +1,5 @@
 httpx
 pytest
 python-dotenv
+typer
+pytest-asyncio
