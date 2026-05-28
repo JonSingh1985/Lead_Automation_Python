@@ -1,10 +1,10 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 
-class LeadCreate(BaseModel):
+class Lead(BaseModel):
     name: str
-    email: EmailStr
-    phone: Optional[str] = None
+    email: str
+    phone: str
 
 class LeadResponse(BaseModel):
     id: int
