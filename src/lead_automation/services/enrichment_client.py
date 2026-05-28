@@ -6,6 +6,8 @@ import json
 import httpx
 import asyncio
 from dotenv import load_dotenv
+from src.lead_automation.config import settings
+
 
 load_dotenv()
 
@@ -147,7 +149,7 @@ class EnrichmentClient:
         try:
             url = "https://openrouter.ai/api/v1/chat/completions"
 
-            api_key = os.getenv("OPENROUTER_API_KEY")
+            api_key = settings.OPENROUTER_API_KEY
 
             headers = {
                 "authorization": f"Bearer {api_key}",
@@ -194,7 +196,7 @@ class EnrichmentClient:
 
     async def process_lead_async(self, rows, lookup):
             
-            semaphore = asyncio.Semaphore(2) # Limit to 2 concurrent AI calls
+            semaphore = asyncio.Semaphore(settings.MAX_CONCURRENT_REQUESTS) # Limit to 2 concurrent AI calls
 
             enriched_rows = []
             tasks = []

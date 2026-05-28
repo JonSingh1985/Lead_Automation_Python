@@ -1,5 +1,7 @@
 httpx
 pytest
+pydantic-settings
 python-dotenv
 typer
 pytest-asyncio
+fastapi uvicorn
