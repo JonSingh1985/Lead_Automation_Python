@@ -1,6 +1,7 @@
 import asyncio
 
 from fastapi import APIRouter
+from fastapi import HTTPException
 from typing import List
 
 from src.lead_automation.api.models.lead import Lead, LeadResponse
@@ -18,6 +19,9 @@ def clean_leads(leads: List[Lead]):
     cleaner = LeadCleaner()
     cleaned_data = []
 
+    if not leads:
+        raise HTTPException(status_code=400, detail="No leads provided")
+
     for lead in leads:
         row = lead.dict()
 
@@ -33,14 +37,28 @@ def clean_leads(leads: List[Lead]):
         except ValueError:
             continue
 
+    if not cleaned_data:
+        raise HTTPException(status_code=400, detail="All rows invalid")
+
     unique_data = cleaner.remove_duplicates(cleaned_data)
 
-    return unique_data
+    return {
+        "status": "success",
+        "count": len(unique_data),
+        "data": unique_data
+    }
+
+
+
+
 
 @router.post("/enrich")
 async def enrich_leads(leads: List[Lead]):
     cleaner = LeadCleaner()
     client = EnrichmentClient()
+
+    if not leads:
+        raise HTTPException(status_code=400, detail="No leads provided")
 
     cleaned_data = []
 
@@ -60,16 +78,28 @@ async def enrich_leads(leads: List[Lead]):
         except ValueError:
             continue
 
+    if not cleaned_data:
+        raise HTTPException(status_code=400, detail="All rows invalid")
+
     unique_data = cleaner.remove_duplicates(cleaned_data)
 
-    # 🔹 Step 2 — API lookup
-    users = client.fetch_all_users()
-    lookup = client.create_lookup(users)
+    try:
+        # 🔹 Step 2 — API lookup
+        users = client.fetch_all_users()
+        lookup = client.create_lookup(users)
 
-    # 🔹 Step 3 — async enrichment
-    enriched_data = await client.process_lead_async(unique_data, lookup)
+        # 🔹 Step 3 — async enrichment
+        enriched_data = await client.process_lead_async(unique_data, lookup)
 
-    return enriched_data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Enrichment faield: {str(e)}")
+
+
+    return {
+        "status": "success",
+        "count": len(enriched_data),
+        "data": enriched_data
+    }
 
 
 
