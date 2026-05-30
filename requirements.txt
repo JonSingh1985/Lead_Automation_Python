@@ -4,4 +4,7 @@ pydantic-settings
 python-dotenv
 typer
 pytest-asyncio
-fastapi uvicorn
+fastapi 
+uvicorn
+sqlalchemy
+aiosqlite
