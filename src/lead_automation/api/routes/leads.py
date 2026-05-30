@@ -1,6 +1,6 @@
 import asyncio
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from fastapi import HTTPException
 from typing import List
 
@@ -9,6 +9,8 @@ from src.lead_automation.services.lead_cleaner import LeadCleaner
 from src.lead_automation.utils.validation import validate_row
 from src.lead_automation.services.enrichment_client import EnrichmentClient
 
+from sqlalchemy.orm import Session
+from src.lead_automation.db.dependencies import get_db
 
 router = APIRouter()
 
@@ -101,6 +103,10 @@ async def enrich_leads(leads: List[Lead]):
         "data": enriched_data
     }
 
+
+@router.get("/test-db")
+def test_db(db: Session = Depends(get_db)):
+    return {"message": "DB connected"}
 
 
 # @router.get("/leads", response_model=List[LeadResponse])
